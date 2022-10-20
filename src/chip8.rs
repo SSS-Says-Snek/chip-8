@@ -6,43 +6,43 @@ const START_MEM_ADDR: u16 = 0x200;
 const START_FONT_ADDR: u16 = 0x50;
 
 const FONTSET: [u8; 80] = [
-	0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-	0x20, 0x60, 0x20, 0x20, 0x70, // 1
-	0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-	0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-	0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-	0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-	0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-	0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-	0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-	0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-	0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-	0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-	0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-	0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-	0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-	0xF0, 0x80, 0xF0, 0x80, 0x80  // F
+    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+    0x20, 0x60, 0x20, 0x20, 0x70, // 1
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+    0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 ];
 
 pub struct Chip8 {
-    registers: Vec<u8>, // Stores data like mem, but it's on the CPU
-    memory: Vec<u8>, // Chip-8's memory
-    index: u16, // Stores memory addrs
-    prog_counter: u16, // Stores addr of next instruction to execute
-    stack_pointer: u8, // Stores where in the stack we are
-    stack: Vec<u16>, // Keep track of function calls
-    sound_timer: u8, // If != 0, decrements 60 times per sec
-    delay_timer: u8, // Same as sound_timer, but also emit buzz when != 0
+    registers: Vec<u8>,  // Stores data like mem, but it's on the CPU
+    memory: Vec<u8>,     // Chip-8's memory
+    index: u16,          // Stores memory addrs
+    prog_counter: u16,   // Stores addr of next instruction to execute
+    stack_pointer: u8,   // Stores where in the stack we are
+    stack: Vec<u16>,     // Keep track of function calls
+    sound_timer: u8,     // If != 0, decrements 60 times per sec
+    delay_timer: u8,     // Same as sound_timer, but also emit buzz when != 0
     pub keys: Vec<bool>, // Determine if input keys are pressed or not
-    pub video: Vec<u8>, // Stores pixels to display
-    opcode: u16, // Encoded instructions
+    pub video: Vec<u8>,  // Stores pixels to display
+    opcode: u16,         // Encoded instructions
 
     rng: ThreadRng, // RNG,
     table: Vec<fn(&mut Self)>,
     table_0: Vec<fn(&mut Self)>,
     table_8: Vec<fn(&mut Self)>,
     table_E: Vec<fn(&mut Self)>,
-    table_F: Vec<fn(&mut Self)>
+    table_F: Vec<fn(&mut Self)>,
 }
 
 impl Chip8 {
@@ -70,14 +70,14 @@ impl Chip8 {
         table_E[0xE] = Chip8::op_Ex9E;
 
         table_F[0x07] = Chip8::op_Fx07;
-		table_F[0x0A] = Chip8::op_Fx0A;
-		table_F[0x15] = Chip8::op_Fx15;
-		table_F[0x18] = Chip8::op_Fx18;
-		table_F[0x1E] = Chip8::op_Fx1E;
-		table_F[0x29] = Chip8::op_Fx29;
-		table_F[0x33] = Chip8::op_Fx33;
-		table_F[0x55] = Chip8::op_Fx55;
-		table_F[0x65] = Chip8::op_Fx65;
+        table_F[0x0A] = Chip8::op_Fx0A;
+        table_F[0x15] = Chip8::op_Fx15;
+        table_F[0x18] = Chip8::op_Fx18;
+        table_F[0x1E] = Chip8::op_Fx1E;
+        table_F[0x29] = Chip8::op_Fx29;
+        table_F[0x33] = Chip8::op_Fx33;
+        table_F[0x55] = Chip8::op_Fx55;
+        table_F[0x65] = Chip8::op_Fx65;
 
         table[0x0] = Chip8::table_0;
         table[0x1] = Chip8::op_1nnn;
@@ -95,7 +95,6 @@ impl Chip8 {
         table[0xD] = Chip8::op_Dxyn;
         table[0xE] = Chip8::table_E;
         table[0xF] = Chip8::table_F;
-
 
         let mut chip8 = Chip8 {
             registers: vec![0; 16],
@@ -115,7 +114,7 @@ impl Chip8 {
             table_0,
             table_8,
             table_E,
-            table_F
+            table_F,
         };
 
         chip8.load_rom(filename);
@@ -125,7 +124,8 @@ impl Chip8 {
     }
 
     pub fn cycle(&mut self) {
-        self.opcode = (((self.memory[self.prog_counter as usize] as u16) << 8) | self.memory[self.prog_counter as usize + 1] as u16) as u16;
+        self.opcode = (((self.memory[self.prog_counter as usize] as u16) << 8)
+            | self.memory[self.prog_counter as usize + 1] as u16) as u16;
         // print!("{:4x} ", self.opcode);
 
         self.prog_counter += 2;
@@ -362,7 +362,7 @@ impl Chip8 {
         let vx = ((self.opcode & 0x0F00) >> 8) as usize;
         let vy = ((self.opcode & 0x00F0) >> 4) as usize;
         let height = (self.opcode & 0x000F) as usize;
-        
+
         let (x_pos, y_pos) = ((self.registers[vx]) as usize, (self.registers[vy]) as usize);
 
         for row in 0..height {
@@ -370,7 +370,8 @@ impl Chip8 {
 
             for col in 0..8 {
                 let sprite_pixel = sprite_byte & (0x80 >> col);
-                let screen_pixel = &mut self.video[((y_pos + row) % 32) * 64 + ((x_pos + col) % 64)];
+                let screen_pixel =
+                    &mut self.video[((y_pos + row) % 32) * 64 + ((x_pos + col) % 64)];
 
                 if sprite_pixel != 0 {
                     // print!("{},{} ", sprite_pixel, screen_pixel);
